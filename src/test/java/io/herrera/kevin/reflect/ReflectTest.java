@@ -125,7 +125,7 @@ public class ReflectTest {
      */
     @Test
     public void getInstanceFieldValueTest() {
-        assertEquals("super instance field", getFieldValue(new Beta(), "superInstanceField"));
+        assertEquals("super instance field", getFieldValue(object, "superInstanceField"));
     }
 
     /**
@@ -141,7 +141,7 @@ public class ReflectTest {
      */
     @Test
     public void invokeInstanceMethodTest() {
-        assertEquals("super instance method", invokeMethod(new Beta(), "superInstanceMethod"));
+        assertEquals("super instance method", invokeMethod(object, "superInstanceMethod"));
     }
 
     /**
