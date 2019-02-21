@@ -162,6 +162,48 @@ public class Reflect {
     }
 
     /**
+     * Invokes a method and returns its result.
+     *
+     * <p>A method with the same name and parameters types for the given arguments will be found,
+     * invoked, and its results are returned. If a matching method could not be found or invoked,
+     * an exception is thrown. If the method throws its own exception, the reflection exception
+     * wrapper, <code>InvocationTargetException</code>, is unwrapped and the inner exception is
+     * thrown.</p>
+     *
+     * @param clazz     The class containing the method.
+     * @param object    The object to use if an instance method is invoked.
+     * @param name      The name of the method.
+     * @param arguments The arguments for the method.
+     *
+     * @return The result of the method.
+     *
+     * @throws IllegalAccessException   If the method could not be accessed.
+     * @throws IllegalArgumentException If the method could not accept an argument.
+     * @throws NoSuchMethodException    If the method could not be found.
+     * @throws Throwable                If the method threw its own exception.
+     */
+    @SneakyThrows
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(
+        Class<?> clazz,
+        Object object,
+        String name,
+        Object... arguments
+    ) {
+        Method method = findMethod(
+            clazz,
+            name,
+            Arrays.stream(arguments).map(Object::getClass).toArray(Class<?>[]::new)
+        );
+
+        try {
+            return (T) method.invoke(object, arguments);
+        } catch (InvocationTargetException cause) {
+            throw cause.getCause();
+        }
+    }
+
+    /**
      * Invokes a static method and returns its result.
      *
      * <p>A method with the same name and parameters types for the given arguments will be found,
@@ -216,8 +258,6 @@ public class Reflect {
      * @param name   The name of the field.
      * @param value  The new value for the field.
      *
-     * @return The value of the field.
-     *
      * @throws IllegalAccessException   If the field could not be accessed.
      * @throws IllegalArgumentException If the field could not accept the given value.
      * @throws NoSuchFieldException     If the field could not be found.
@@ -234,8 +274,6 @@ public class Reflect {
      * @param name   The name of the field.
      * @param value  The new value for the field.
      *
-     * @return The value of the field.
-     *
      * @throws IllegalAccessException   If the field could not be accessed.
      * @throws IllegalArgumentException If the field could not accept the given value.
      * @throws NoSuchFieldException     If the field could not be found.
@@ -248,48 +286,6 @@ public class Reflect {
 
     private Reflect() {
         // Should not be initialized.
-    }
-
-    /**
-     * Invokes a method and returns its result.
-     *
-     * <p>A method with the same name and parameters types for the given arguments will be found,
-     * invoked, and its results are returned. If a matching method could not be found or invoked,
-     * an exception is thrown. If the method throws its own exception, the reflection exception
-     * wrapper, <code>InvocationTargetException</code>, is unwrapped and the inner exception is
-     * thrown.</p>
-     *
-     * @param clazz     The class containing the method.
-     * @param object    The object to use if an instance method is invoked.
-     * @param name      The name of the method.
-     * @param arguments The arguments for the method.
-     *
-     * @return The result of the method.
-     *
-     * @throws IllegalAccessException   If the method could not be accessed.
-     * @throws IllegalArgumentException If the method could not accept an argument.
-     * @throws NoSuchMethodException    If the method could not be found.
-     * @throws Throwable                If the method threw its own exception.
-     */
-    @SneakyThrows
-    @SuppressWarnings("unchecked")
-    private static <T> T invokeMethod(
-        Class<?> clazz,
-        Object object,
-        String name,
-        Object... arguments
-    ) {
-        Method method = findMethod(
-            clazz,
-            name,
-            Arrays.stream(arguments).map(Object::getClass).toArray(Class<?>[]::new)
-        );
-
-        try {
-            return (T) method.invoke(object, arguments);
-        } catch (InvocationTargetException cause) {
-            throw cause.getCause();
-        }
     }
 
     /**
