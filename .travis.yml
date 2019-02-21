@@ -18,6 +18,10 @@ install: true
 
 language: java
 
+matrix:
+    allow_failures:
+        - jdk: openjdk-ea
+
 script: ./gradlew jacocoTestReport checkstyleMain
 
 sudo: false
