@@ -4,6 +4,7 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;
+import lombok.SneakyThrows;
 
 /**
  * Provides a collection of utilities to simplify the use of reflections.
@@ -24,7 +25,8 @@ public class Reflect {
      *
      * @throws NoSuchFieldException If the field could not be found.
      */
-    public static Field findField(Class<?> clazz, String name) throws NoSuchFieldException {
+    @SneakyThrows({ NoSuchFieldException.class })
+    public static Field findField(Class<?> clazz, String name) {
         Objects.requireNonNull(clazz, "The class is required.");
         Objects.requireNonNull(name, "The field name is required.");
 
@@ -59,7 +61,7 @@ public class Reflect {
      *
      * @see #findField(Class, String)
      */
-    public static Field findField(Object object, String name) throws NoSuchFieldException {
+    public static Field findField(Object object, String name) {
         Objects.requireNonNull(object, "The object is required.");
 
         return findField(object.getClass(), name);
@@ -80,8 +82,8 @@ public class Reflect {
      *
      * @throws NoSuchMethodException If the method could not be found.
      */
-    public static Method findMethod(Class<?> clazz, String name, Class<?>... parameterTypes)
-        throws NoSuchMethodException {
+    @SneakyThrows({ NoSuchMethodException.class })
+    public static Method findMethod(Class<?> clazz, String name, Class<?>... parameterTypes) {
         Objects.requireNonNull(clazz, "The class is required.");
         Objects.requireNonNull(name, "The method name is required.");
 
@@ -117,8 +119,7 @@ public class Reflect {
      *
      * @see #findMethod(Class, String, Class[])
      */
-    public static Method findMethod(Object object, String name, Class<?>... parameterTypes)
-        throws NoSuchMethodException {
+    public static Method findMethod(Object object, String name, Class<?>... parameterTypes) {
         Objects.requireNonNull(object, "The object is required.");
 
         return findMethod(object.getClass(), name, parameterTypes);
