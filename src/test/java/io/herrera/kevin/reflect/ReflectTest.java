@@ -2,6 +2,7 @@ package io.herrera.kevin.reflect;
 
 import static io.herrera.kevin.reflect.Reflect.findField;
 import static io.herrera.kevin.reflect.Reflect.findMethod;
+import static io.herrera.kevin.reflect.Reflect.getFieldValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -116,6 +117,22 @@ public class ReflectTest {
         assertNotNull(method);
         assertSame(Alpha.class, method.getDeclaringClass());
         assertEquals("super static method", method.invoke(null));
+    }
+
+    /**
+     * Verify that the value of an instance field is returned.
+     */
+    @Test
+    public void getInstanceFieldValueTest() {
+        assertEquals("super instance field", getFieldValue(new Beta(), "superInstanceField"));
+    }
+
+    /**
+     * Verify that the value of a static field is returned.
+     */
+    @Test
+    public void getStaticFieldValueTest() {
+        assertEquals("super static field", getFieldValue(Beta.class, "superStaticField"));
     }
 
     /**

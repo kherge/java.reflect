@@ -126,6 +126,40 @@ public class Reflect {
     }
 
     /**
+     * Returns the value of an instance field.
+     *
+     * @param object The object whose class contains the field.
+     * @param name   The name of the field.
+     *
+     * @return The value of the field.
+     *
+     * @throws IllegalAccessException If the field could not be accessed.
+     * @throws NoSuchFieldException   If the field could not be found.
+     */
+    @SneakyThrows({ IllegalAccessException.class })
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldValue(Object object, String name) {
+        return (T) findField(object, name).get(object);
+    }
+
+    /**
+     * Returns the value of a static field.
+     *
+     * @param clazz  The class containing the field.
+     * @param name   The name of the field.
+     *
+     * @return The value of the field.
+     *
+     * @throws IllegalAccessException If the field could not be accessed.
+     * @throws NoSuchFieldException   If the field could not be found.
+     */
+    @SneakyThrows({ IllegalAccessException.class })
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldValue(Class<?> clazz, String name) {
+        return (T) findField(clazz, name).get(null);
+    }
+
+    /**
      * Makes a reflected object accessible.
      *
      * @param object The accessible object.
