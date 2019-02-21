@@ -246,6 +246,10 @@ public class Reflect {
         findField(clazz, name).set(null, value);
     }
 
+    private Reflect() {
+        // Should not be initialized.
+    }
+
     /**
      * Invokes a method and returns its result.
      *
