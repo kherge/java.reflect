@@ -1,0 +1,226 @@
+// Register the Gradle plugins.
+plugins {
+    id 'checkstyle'
+    id 'jacoco'
+    id 'java'
+    id 'java-library'
+    id 'maven'
+    id 'signing'
+
+    // Use Palantir's Git version plugin.
+    // https://github.com/palantir/gradle-git-version
+    id 'com.palantir.git-version' version '0.12.0-rc2'
+
+    // Use Lombok.
+    // https://github.com/franzbecker/gradle-lombok
+    id 'io.franzbecker.gradle-lombok' version '1.14'
+
+    // Use SonarQube.
+    // https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
+    id 'org.sonarqube' version '2.6'
+}
+
+// Set the library information.
+group 'io.herrera.kevin'
+
+version gitVersion()
+
+// Support Java 8.
+sourceCompatibility = 1.8
+
+// Register artifact repositories.
+repositories {
+    mavenCentral()
+}
+
+// Declare the project dependencies.
+dependencies {
+
+    // Use JUnit 5.
+    // https://docs.gradle.org/current/userguide/java_testing.html#example_junit_jupiter_dependencies
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.3.1')
+    testImplementation('org.junit.jupiter:junit-jupiter-params:5.3.1')
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.3.1')
+
+    // Use Mockito 2.
+    // https://site.mockito.org/
+    testCompile('org.mockito:mockito-core:2.23.0')
+}
+
+// Configure the Checkstyle plugin.
+checkstyle {
+
+    // Set the path to the configuration file.
+    configFile = file('config/checkstyle.xml')
+
+    // Use a more recent version of Checkstyle.
+    toolVersion = '8.14'
+}
+
+// Configure the JaCoCo tool.
+jacoco {
+
+    // Use 0.8.2 to support JDK 11.
+    toolVersion = '0.8.2'
+}
+
+// Use JaCoCo to generate code coverage reports.
+jacocoTestReport {
+
+    // Require that tests be performed first.
+    dependsOn 'test'
+}
+
+// Configure the Lombok plugin.
+lombok {
+
+    // Use a more recent version of Lombok.
+    version = '1.18.4'
+}
+
+// Configure the signing plugin.
+signing {
+
+    // Sign all of the generated archives.
+    sign configurations.archives
+}
+
+// Use SonarQube to analyze the code.
+sonarqube {
+    properties {
+        property 'sonar.projectName', 'java.reflect'
+        property 'sonar.projectKey', 'kherge_java.reflect'
+        property 'sonar.organization', 'kherge-github'
+        property 'sonar.host.url', 'https://sonarcloud.io'
+        property 'sonar.login', System.getenv('SONAR_TOKEN')
+        property 'sonar.java.checkstyle.reportPaths', './build/reports/checkstyle/main.xml'
+    }
+}
+
+// Generates a JAR containing javadoc.
+task javadocJar(type: Jar) {
+
+    // Set the file name classifier.
+    classifier = 'javadoc'
+
+    // Set the description of the task.
+    description = 'Generates a JAR containing the javadoc.'
+
+    // Depend on javadoc.
+    from javadoc
+}
+
+// Generates a JAR containing sources.
+task sourcesJar(type: Jar) {
+
+    // Set the file name classifier.
+    classifier = 'sources'
+
+    // Set the description of the task.
+    description = 'Generates a JAR containing the source.'
+
+    // Depend on all main sources.
+    from sourceSets.main.allSource
+}
+
+// Configure artifact generation.
+artifacts {
+
+    // Include javadoc and sources.
+    archives javadocJar, sourcesJar
+}
+
+// Configure all Checkstyle tasks.
+tasks.withType(Checkstyle) {
+
+    // Disable dumping output to console.
+    logging.setLevel(LogLevel.ERROR)
+
+    // Write reports as HTML.
+    reports {
+        html.enabled = true
+        xml.enabled = true
+    }
+}
+
+// Use JUnit 5 for testing.
+// https://docs.gradle.org/current/userguide/java_testing.html#using_junit5
+test {
+    useJUnitPlatform()
+}
+
+// Configure artifact deployment.
+uploadArchives {
+    repositories {
+        mavenDeployer {
+
+            // Sign the POM before deploying.
+            beforeDeployment {
+                MavenDeployment deployment -> signing.signPom(deployment)
+            }
+
+            // Configure values for the POM.
+            pom.project {
+
+                // Set the description.
+                description = 'A library to simplify reflection operations.'
+
+                // Set the maintainers of this project.
+                developers {
+
+                    // Add myself.
+                    developer {
+                        email 'kevin@herrera.io'
+                        id 'kherge'
+                        name 'Kevin Herreras'
+                    }
+                }
+
+                // Set the licenses this project is released under.
+                licenses {
+
+                    license {
+                        name 'Apache License 2.0'
+                        url 'https://github.com/kherge/java.reflect/blob/master/APACHE-2.0'
+                    }
+
+                    // Set the MIT license.
+                    license {
+                        name 'MIT License'
+                        url 'https://github.com/kherge/java.reflect/blob/master/MIT'
+                    }
+                }
+
+                // Set the name of the project.
+                name 'Reflect'
+
+                // Set the packaging as JAR.
+                packaging 'jar'
+
+                // Set the source code information.
+                scm {
+                    connection 'scm:git:https://github.com/kherge/java.reflect.git'
+                    developerConnection 'scm:git:https://github.com/kherge/java.reflect.git'
+                    url 'https://github.com/kherge/java.reflect'
+                }
+
+                // Set the homepage of the project.
+                url 'https://github.com/kherge/java.reflect'
+            }
+
+            // Set default OSSRH values.
+            if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')) {
+
+                // Configure artifact repository.
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                  authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                // Configure snapshot artifact repository.
+                snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+                  authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+            }
+        }
+    }
+}
