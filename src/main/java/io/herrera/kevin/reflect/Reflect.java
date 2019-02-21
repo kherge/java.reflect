@@ -2,7 +2,9 @@ package io.herrera.kevin.reflect;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Objects;
 import lombok.SneakyThrows;
 
@@ -157,6 +159,96 @@ public class Reflect {
     @SuppressWarnings("unchecked")
     public static <T> T getFieldValue(Class<?> clazz, String name) {
         return (T) findField(clazz, name).get(null);
+    }
+
+    /**
+     * Invokes a static method and returns its result.
+     *
+     * <p>A method with the same name and parameters types for the given arguments will be found,
+     * invoked, and its results are returned. If a matching method could not be found or invoked,
+     * an exception is thrown. If the method throws its own exception, the reflection exception
+     * wrapper, <code>InvocationTargetException</code>, is unwrapped and the inner exception is
+     * thrown.</p>
+     *
+     * @param clazz     The class containing the method.
+     * @param name      The name of the method.
+     * @param arguments The arguments for the method.
+     *
+     * @return The result of the method.
+     *
+     * @throws IllegalAccessException   If the method could not be accessed.
+     * @throws IllegalArgumentException If the method could not accept an argument.
+     * @throws NoSuchMethodException    If the method could not be found.
+     * @throws Throwable                If the method threw its own exception.
+     */
+    public static <T> T invokeMethod(Class<?> clazz, String name, Object... arguments) {
+        return invokeMethod(clazz, null, name, arguments);
+    }
+
+    /**
+     * Invokes an instance method and returns its result.
+     *
+     * <p>A method with the same name and parameters types for the given arguments will be found,
+     * invoked, and its results are returned. If a matching method could not be found or invoked,
+     * an exception is thrown. If the method throws its own exception, the reflection exception
+     * wrapper, <code>InvocationTargetException</code>, is unwrapped and the inner exception is
+     * thrown.</p>
+     *
+     * @param object    The object whose class contains the method.
+     * @param name      The name of the method.
+     * @param arguments The arguments for the method.
+     *
+     * @return The result of the method.
+     *
+     * @throws IllegalAccessException   If the method could not be accessed.
+     * @throws IllegalArgumentException If the method could not accept an argument.
+     * @throws NoSuchMethodException    If the method could not be found.
+     * @throws Throwable                If the method threw its own exception.
+     */
+    public static <T> T invokeMethod(Object object, String name, Object... arguments) {
+        return invokeMethod(object.getClass(), object, name, arguments);
+    }
+
+    /**
+     * Invokes a method and returns its result.
+     *
+     * <p>A method with the same name and parameters types for the given arguments will be found,
+     * invoked, and its results are returned. If a matching method could not be found or invoked,
+     * an exception is thrown. If the method throws its own exception, the reflection exception
+     * wrapper, <code>InvocationTargetException</code>, is unwrapped and the inner exception is
+     * thrown.</p>
+     *
+     * @param clazz     The class containing the method.
+     * @param object    The object to use if an instance method is invoked.
+     * @param name      The name of the method.
+     * @param arguments The arguments for the method.
+     *
+     * @return The result of the method.
+     *
+     * @throws IllegalAccessException   If the method could not be accessed.
+     * @throws IllegalArgumentException If the method could not accept an argument.
+     * @throws NoSuchMethodException    If the method could not be found.
+     * @throws Throwable                If the method threw its own exception.
+     */
+    @SneakyThrows
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(
+        Class<?> clazz,
+        Object object,
+        String name,
+        Object... arguments
+    ) {
+        Method method = findMethod(
+            clazz,
+            name,
+            Arrays.stream(arguments).map(Object::getClass).toArray(Class<?>[]::new)
+        );
+
+        try {
+            return (T) method.invoke(object, arguments);
+        } catch (InvocationTargetException cause) {
+            throw cause.getCause();
+        }
     }
 
     /**
