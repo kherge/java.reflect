@@ -210,6 +210,43 @@ public class Reflect {
     }
 
     /**
+     * Sets the value of an instance field.
+     *
+     * @param object The object whose class contains the field.
+     * @param name   The name of the field.
+     * @param value  The new value for the field.
+     *
+     * @return The value of the field.
+     *
+     * @throws IllegalAccessException   If the field could not be accessed.
+     * @throws IllegalArgumentException If the field could not accept the given value.
+     * @throws NoSuchFieldException     If the field could not be found.
+     */
+    @SneakyThrows({ IllegalAccessException.class })
+    public static <T> void setFieldValue(Object object, String name, T value) {
+        findField(object, name).set(object, value);
+    }
+
+    /**
+     * Sets the value of a static field.
+     *
+     * @param clazz  The class containing the field.
+     * @param name   The name of the field.
+     * @param value  The new value for the field.
+     *
+     * @return The value of the field.
+     *
+     * @throws IllegalAccessException   If the field could not be accessed.
+     * @throws IllegalArgumentException If the field could not accept the given value.
+     * @throws NoSuchFieldException     If the field could not be found.
+     */
+    @SneakyThrows({ IllegalAccessException.class })
+    @SuppressWarnings("unchecked")
+    public static <T> void setFieldValue(Class<?> clazz, String name, T value) {
+        findField(clazz, name).set(null, value);
+    }
+
+    /**
      * Invokes a method and returns its result.
      *
      * <p>A method with the same name and parameters types for the given arguments will be found,

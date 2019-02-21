@@ -4,12 +4,14 @@ import static io.herrera.kevin.reflect.Reflect.findField;
 import static io.herrera.kevin.reflect.Reflect.findMethod;
 import static io.herrera.kevin.reflect.Reflect.getFieldValue;
 import static io.herrera.kevin.reflect.Reflect.invokeMethod;
+import static io.herrera.kevin.reflect.Reflect.setFieldValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -153,11 +155,44 @@ public class ReflectTest {
     }
 
     /**
+     * Verify that the value of an instance field is set.
+     */
+    @Test
+    public void setInstanceFieldValueTest() {
+        String value = "new value";
+
+        setFieldValue(object, "superInstanceField", value);
+
+        assertEquals(value, getFieldValue(object, "superInstanceField"));
+    }
+
+    /**
+     * Verify that the value of a static field is set.
+     */
+    @Test
+    public void setStaticFieldValueTest() {
+        String value = "new value";
+
+        setFieldValue(Beta.class, "superStaticField", value);
+
+        assertEquals(value, getFieldValue(Beta.class, "superStaticField"));
+    }
+
+    /**
      * Initializes the object under test.
      */
     @BeforeEach
     public void setUp() {
         object = new Beta();
+    }
+
+    /**
+     * Resets modified values.
+     */
+    @AfterEach
+    public void tearDown() {
+        Alpha.reset();
+        Beta.reset();
     }
 
     /**
@@ -174,6 +209,13 @@ public class ReflectTest {
          * A superclass static field.
          */
         private static String superStaticField = "super static field";
+
+        /**
+         * Resets the static instance fields.
+         */
+        public static void reset() {
+            superStaticField = "super static field";
+        }
 
         /**
          * A super class instance method.
@@ -204,6 +246,13 @@ public class ReflectTest {
          * A static field.
          */
         private static String staticField = "static field";
+
+        /**
+         * Resets the static instance fields.
+         */
+        public static void reset() {
+            staticField = "static field";
+        }
 
         /**
          * An instance method.
