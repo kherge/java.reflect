@@ -81,6 +81,9 @@ lombok {
 // Configure the signing plugin.
 signing {
 
+    // Use GPG to sign the archives.
+    useGpgCmd()
+
     // Sign all of the generated archives.
     sign configurations.archives
 }
