@@ -59,38 +59,6 @@ public class ReflectTest {
     }
 
     /**
-     * Verify that an exception is thrown if a static field is not found.
-     */
-    @Test
-    public void findStaticFieldExceptionTest() {
-        assertThrows(NoSuchFieldException.class, () -> findField(Beta.class, "doesNotExist"));
-    }
-
-    /**
-     * Verify that the static field for a class is found and is accessible.
-     */
-    @Test
-    public void findStaticFieldInClassTest() throws Exception {
-        Field field = findField(Beta.class, "staticField");
-
-        assertNotNull(field);
-        assertSame(Beta.class, field.getDeclaringClass());
-        assertEquals("static field", field.get(null));
-    }
-
-    /**
-     * Verify that the static field for a superclass is found and is accessible.
-     */
-    @Test
-    public void findStaticFieldInSuperclassTest() throws Exception {
-        Field field = findField(Beta.class, "superStaticField");
-
-        assertNotNull(field);
-        assertSame(Alpha.class, field.getDeclaringClass());
-        assertEquals("super static field", field.get(null));
-    }
-
-    /**
      * Verify that an exception is thrown if an instance method is not found.
      */
     @Test
@@ -121,6 +89,38 @@ public class ReflectTest {
         assertNotNull(method);
         assertSame(Alpha.class, method.getDeclaringClass());
         assertEquals("super instance method", method.invoke(object));
+    }
+
+    /**
+     * Verify that an exception is thrown if a static field is not found.
+     */
+    @Test
+    public void findStaticFieldExceptionTest() {
+        assertThrows(NoSuchFieldException.class, () -> findField(Beta.class, "doesNotExist"));
+    }
+
+    /**
+     * Verify that the static field for a class is found and is accessible.
+     */
+    @Test
+    public void findStaticFieldInClassTest() throws Exception {
+        Field field = findField(Beta.class, "staticField");
+
+        assertNotNull(field);
+        assertSame(Beta.class, field.getDeclaringClass());
+        assertEquals("static field", field.get(null));
+    }
+
+    /**
+     * Verify that the static field for a superclass is found and is accessible.
+     */
+    @Test
+    public void findStaticFieldInSuperclassTest() throws Exception {
+        Field field = findField(Beta.class, "superStaticField");
+
+        assertNotNull(field);
+        assertSame(Alpha.class, field.getDeclaringClass());
+        assertEquals("super static field", field.get(null));
     }
 
     /**
@@ -172,19 +172,19 @@ public class ReflectTest {
     }
 
     /**
-     * Verify that the invocation target exception is rethrown.
-     */
-    @Test
-    public void invokeMethodThrowInvocationTargetExceptionTest() {
-        assertThrows(Exception.class, () -> invokeMethod(Beta.class, "superStaticExceptionMethod"));
-    }
-
-    /**
      * Verify that the instance method is invoked.
      */
     @Test
     public void invokeInstanceMethodTest() {
         assertEquals("super instance method", invokeMethod(object, "superInstanceMethod"));
+    }
+
+    /**
+     * Verify that the invocation target exception is rethrown.
+     */
+    @Test
+    public void invokeMethodThrowInvocationTargetExceptionTest() {
+        assertThrows(Exception.class, () -> invokeMethod(Beta.class, "superStaticExceptionMethod"));
     }
 
     /**
