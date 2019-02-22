@@ -8,7 +8,7 @@ A library to simplify reflection operations.
 
 Working with reflections naturally comes with a hefty dose of warnings and red flags. Once we know
 what to watch out for, using reflections in Java can be a bit of a chore. This library provides a
-set of utilities to help simplify field and methods reflections.
+set of utilities to help simplify field and method reflections.
 
 ```java
 MyClass object = new MyClass("hello");
