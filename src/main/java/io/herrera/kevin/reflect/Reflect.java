@@ -24,8 +24,6 @@ public class Reflect {
      * @param name  The name of the field.
      *
      * @return The reflected field.
-     *
-     * @throws NoSuchFieldException If the field could not be found.
      */
     @SneakyThrows({ NoSuchFieldException.class })
     public static Field findField(Class<?> clazz, String name) {
@@ -59,8 +57,6 @@ public class Reflect {
      *
      * @return The reflected field.
      *
-     * @throws NoSuchFieldException If the field could not be found.
-     *
      * @see #findField(Class, String)
      */
     public static Field findField(Object object, String name) {
@@ -81,8 +77,6 @@ public class Reflect {
      * @param parameterTypes The parameter types of the method.
      *
      * @return The reflected method.
-     *
-     * @throws NoSuchMethodException If the method could not be found.
      */
     @SneakyThrows({ NoSuchMethodException.class })
     public static Method findMethod(Class<?> clazz, String name, Class<?>... parameterTypes) {
@@ -117,8 +111,6 @@ public class Reflect {
      *
      * @return The reflected method.
      *
-     * @throws NoSuchMethodException If the method could not be found.
-     *
      * @see #findMethod(Class, String, Class[])
      */
     public static Method findMethod(Object object, String name, Class<?>... parameterTypes) {
@@ -130,13 +122,11 @@ public class Reflect {
     /**
      * Returns the value of a static field.
      *
+     * @param <T>    The type of the field.
      * @param clazz  The class containing the field.
      * @param name   The name of the field.
      *
      * @return The value of the field.
-     *
-     * @throws IllegalAccessException If the field could not be accessed.
-     * @throws NoSuchFieldException   If the field could not be found.
      */
     @SneakyThrows({ IllegalAccessException.class })
     @SuppressWarnings("unchecked")
@@ -147,13 +137,11 @@ public class Reflect {
     /**
      * Returns the value of an instance field.
      *
+     * @param <T>    The type of the field.
      * @param object The object whose class contains the field.
      * @param name   The name of the field.
      *
      * @return The value of the field.
-     *
-     * @throws IllegalAccessException If the field could not be accessed.
-     * @throws NoSuchFieldException   If the field could not be found.
      */
     @SneakyThrows({ IllegalAccessException.class })
     @SuppressWarnings("unchecked")
@@ -170,6 +158,7 @@ public class Reflect {
      * wrapper, <code>InvocationTargetException</code>, is unwrapped and the inner exception is
      * thrown.</p>
      *
+     * @param <T>       The type of the method result.
      * @param clazz     The class containing the method.
      * @param object    The object to use if an instance method is invoked.
      * @param name      The name of the method.
@@ -177,10 +166,7 @@ public class Reflect {
      *
      * @return The result of the method.
      *
-     * @throws IllegalAccessException   If the method could not be accessed.
      * @throws IllegalArgumentException If the method could not accept an argument.
-     * @throws NoSuchMethodException    If the method could not be found.
-     * @throws Throwable                If the method threw its own exception.
      */
     @SneakyThrows
     @SuppressWarnings("unchecked")
@@ -212,16 +198,14 @@ public class Reflect {
      * wrapper, <code>InvocationTargetException</code>, is unwrapped and the inner exception is
      * thrown.</p>
      *
+     * @param <T>       The type of the method result.
      * @param clazz     The class containing the method.
      * @param name      The name of the method.
      * @param arguments The arguments for the method.
      *
      * @return The result of the method.
      *
-     * @throws IllegalAccessException   If the method could not be accessed.
      * @throws IllegalArgumentException If the method could not accept an argument.
-     * @throws NoSuchMethodException    If the method could not be found.
-     * @throws Throwable                If the method threw its own exception.
      */
     public static <T> T invokeMethod(Class<?> clazz, String name, Object... arguments) {
         return invokeMethod(clazz, null, name, arguments);
@@ -236,16 +220,14 @@ public class Reflect {
      * wrapper, <code>InvocationTargetException</code>, is unwrapped and the inner exception is
      * thrown.</p>
      *
+     * @param <T>       The type of the method result.
      * @param object    The object whose class contains the method.
      * @param name      The name of the method.
      * @param arguments The arguments for the method.
      *
      * @return The result of the method.
      *
-     * @throws IllegalAccessException   If the method could not be accessed.
      * @throws IllegalArgumentException If the method could not accept an argument.
-     * @throws NoSuchMethodException    If the method could not be found.
-     * @throws Throwable                If the method threw its own exception.
      */
     public static <T> T invokeMethod(Object object, String name, Object... arguments) {
         return invokeMethod(object.getClass(), object, name, arguments);
@@ -254,13 +236,12 @@ public class Reflect {
     /**
      * Sets the value of a static field.
      *
+     * @param <T>    The type of the field.
      * @param clazz  The class containing the field.
      * @param name   The name of the field.
      * @param value  The new value for the field.
      *
-     * @throws IllegalAccessException   If the field could not be accessed.
      * @throws IllegalArgumentException If the field could not accept the given value.
-     * @throws NoSuchFieldException     If the field could not be found.
      */
     @SneakyThrows({ IllegalAccessException.class })
     @SuppressWarnings("unchecked")
@@ -271,13 +252,12 @@ public class Reflect {
     /**
      * Sets the value of an instance field.
      *
+     * @param <T>    The type of the field.
      * @param object The object whose class contains the field.
      * @param name   The name of the field.
      * @param value  The new value for the field.
      *
-     * @throws IllegalAccessException   If the field could not be accessed.
      * @throws IllegalArgumentException If the field could not accept the given value.
-     * @throws NoSuchFieldException     If the field could not be found.
      */
     @SneakyThrows({ IllegalAccessException.class })
     public static <T> void setFieldValue(Object object, String name, T value) {
@@ -291,6 +271,7 @@ public class Reflect {
     /**
      * Makes a reflected object accessible.
      *
+     * @param <T>    The type of the object.
      * @param object The accessible object.
      *
      * @return The same accessible object.
