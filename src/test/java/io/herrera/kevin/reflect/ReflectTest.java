@@ -8,6 +8,7 @@ import static io.herrera.kevin.reflect.Reflect.setFieldValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -24,6 +25,14 @@ public class ReflectTest {
      * The object under test.
      */
     private Beta object;
+
+    /**
+     * Verify that an exception is thrown if an instance field is not found.
+     */
+    @Test
+    public void findInstanceFieldExceptionTest() {
+        assertThrows(NoSuchFieldException.class, () -> findField(object, "doesNotExist"));
+    }
 
     /**
      * Verify that the instance field for a class is found and is accessible.
@@ -47,6 +56,14 @@ public class ReflectTest {
         assertNotNull(field);
         assertSame(Alpha.class, field.getDeclaringClass());
         assertEquals("super instance field", field.get(object));
+    }
+
+    /**
+     * Verify that an exception is thrown if a static field is not found.
+     */
+    @Test
+    public void findStaticFieldExceptionTest() {
+        assertThrows(NoSuchFieldException.class, () -> findField(Beta.class, "doesNotExist"));
     }
 
     /**
@@ -74,6 +91,14 @@ public class ReflectTest {
     }
 
     /**
+     * Verify that an exception is thrown if an instance method is not found.
+     */
+    @Test
+    public void findInstanceMethodExceptionTest() {
+        assertThrows(NoSuchMethodException.class, () -> findMethod(object, "doesNotExist"));
+    }
+
+    /**
      * Verify that the instance method for a class is found and is accessible.
      */
     @Test
@@ -96,6 +121,14 @@ public class ReflectTest {
         assertNotNull(method);
         assertSame(Alpha.class, method.getDeclaringClass());
         assertEquals("super instance method", method.invoke(object));
+    }
+
+    /**
+     * Verify that an exception is thrown if a static method is not found.
+     */
+    @Test
+    public void findStaticMethodExceptionTest() {
+        assertThrows(NoSuchMethodException.class, () -> findMethod(Beta.class, "doesNotExist"));
     }
 
     /**
@@ -136,6 +169,14 @@ public class ReflectTest {
     @Test
     public void getStaticFieldValueTest() {
         assertEquals("super static field", getFieldValue(Beta.class, "superStaticField"));
+    }
+
+    /**
+     * Verify that the invocation target exception is rethrown.
+     */
+    @Test
+    public void invokeMethodThrowInvocationTargetExceptionTest() {
+        assertThrows(Exception.class, () -> invokeMethod(Beta.class, "superStaticExceptionMethod"));
     }
 
     /**
@@ -229,6 +270,13 @@ public class ReflectTest {
          */
         private static String superStaticMethod() {
             return "super static method";
+        }
+
+        /**
+         * A super class static exception method.
+         */
+        private static void superStaticExceptionMethod() throws Exception {
+            throw new Exception("A method exception.");
         }
     }
 
