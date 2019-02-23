@@ -71,7 +71,6 @@ public class ReflectTest {
      */
     @Test
     public void findInstanceMethodInClassTest() throws Exception {
-        Beta object = new Beta();
         Method method = findMethod(object, "instanceMethod");
 
         assertNotNull(method);
