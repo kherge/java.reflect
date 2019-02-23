@@ -1,8 +1,10 @@
 package io.herrera.kevin.reflect;
 
+import static io.herrera.kevin.reflect.Reflect.findAnyMethod;
 import static io.herrera.kevin.reflect.Reflect.findField;
 import static io.herrera.kevin.reflect.Reflect.findMethod;
 import static io.herrera.kevin.reflect.Reflect.getFieldValue;
+import static io.herrera.kevin.reflect.Reflect.invokeAnyMethod;
 import static io.herrera.kevin.reflect.Reflect.invokeMethod;
 import static io.herrera.kevin.reflect.Reflect.setFieldValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,6 +27,70 @@ public class ReflectTest {
      * The object under test.
      */
     private Beta object;
+
+    /**
+     * Verify that an exception is thrown if no method is found.
+     */
+    @Test
+    public void findAnyInstanceMethodExceptionTest() {
+        assertThrows(NoSuchMethodException.class, () -> findAnyMethod(object, "doesNotExist"));
+    }
+
+    /**
+     * Verify that the first method is returned for a class.
+     */
+    @Test
+    public void findAnyInstanceMethodInClassTest() throws Exception {
+        Method method = findAnyMethod(object, "instanceMethod");
+
+        assertNotNull(method);
+        assertSame(Beta.class, method.getDeclaringClass());
+        assertEquals("instance method", method.invoke(object));
+    }
+
+    /**
+     * Verify that the first method is returned for a superclass.
+     */
+    @Test
+    public void findAnyInstanceMethodInSuperclassTest() throws Exception {
+        Method method = findAnyMethod(object, "superInstanceMethod");
+
+        assertNotNull(method);
+        assertSame(Alpha.class, method.getDeclaringClass());
+        assertEquals("super instance method", method.invoke(object));
+    }
+
+    /**
+     * Verify that an exception is thrown if no method is found.
+     */
+    @Test
+    public void findAnyStaticMethodExceptionTest() {
+        assertThrows(NoSuchMethodException.class, () -> findAnyMethod(Beta.class, "doesNotExist"));
+    }
+
+    /**
+     * Verify that the first method is returned for a class.
+     */
+    @Test
+    public void findAnyStaticMethodInClassTest() throws Exception {
+        Method method = findAnyMethod(object, "staticMethod");
+
+        assertNotNull(method);
+        assertSame(Beta.class, method.getDeclaringClass());
+        assertEquals("static method", method.invoke(null));
+    }
+
+    /**
+     * Verify that the first method is returned for a superclass.
+     */
+    @Test
+    public void findAnyStaticMethodInSuperclassTest() throws Exception {
+        Method method = findAnyMethod(object, "superStaticMethod");
+
+        assertNotNull(method);
+        assertSame(Alpha.class, method.getDeclaringClass());
+        assertEquals("super static method", method.invoke(null));
+    }
 
     /**
      * Verify that an exception is thrown if an instance field is not found.
@@ -168,6 +234,44 @@ public class ReflectTest {
     @Test
     public void getStaticFieldValueTest() {
         assertEquals("super static field", getFieldValue(Beta.class, "superStaticField"));
+    }
+
+    /**
+     * Verify that the first found method is invoked.
+     */
+    @Test
+    public void invokeAnyInstanceMethodTest() {
+        assertEquals("super instance method", invokeAnyMethod(object, "superInstanceMethod"));
+    }
+
+    /**
+     * Verify that the invocation target exception is rethrown.
+     */
+    @Test
+    public void invokeAnyInstanceMethodExceptionTest() {
+        assertThrows(
+            Exception.class,
+            () -> invokeAnyMethod(Beta.class, "superStaticExceptionMethod")
+        );
+    }
+
+    /**
+     * Verify that the first found method is invoked.
+     */
+    @Test
+    public void invokeAnyStaticMethodTest() {
+        assertThrows(
+            Exception.class,
+            () -> invokeAnyMethod(Beta.class, "superStaticExceptionMethod")
+        );
+    }
+
+    /**
+     * Verify that the invocation target exception is rethrown.
+     */
+    @Test
+    public void invokeAnyStaticMethodExceptionTest() {
+        assertEquals("super static method", invokeMethod(Beta.class, "superStaticMethod"));
     }
 
     /**

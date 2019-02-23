@@ -47,8 +47,9 @@ Usage
 
 > It is important to note that `findField` and `findMethod` will find any declared member, not just
 > public ones. It is also important to note that `invokeMethod` may not work with methods that make
-> use of generics and variadics. It is recommended that you use `findMethod` instead of
-> `invokeMethod` when a method accepts generics or variadics.
+> use of generics and variadics. It is recommended that you use `invokeAnyMethod` instead of
+> `invokeMethod` when a method accepts generics or variadics. If the method is overloaded, you may
+> want to use `findMethod` instead.
 
 ```java
 import static io.herrera.io.reflect.Reflect.*;
@@ -85,11 +86,23 @@ class Example {
         Method method = findMethod(myObject, "myMethodName");
         Method method = findMethod(myObject, "myMethodName", TypeA.class, TypeB.class); // etc.
 
+        // Retrieve any reflected method by class for a given name.
+        Method method = findAnyMethod(MyClass.class, "myMethodName");
+
+        // Retrieve any reflected method by object for a given name.
+        Method method = findAnyMethod(myObject, "myMethodName");
+
         // Invoke a static method and retrieve its result.
         String myString = invokeMethod(MyClass.class, "myMethodName", "arg A", "arg B"); // etc.
 
         // Invoke an instance method and retrieve its result.
         String myString = invokeMethod(myObject, "myMethodName", "arg A", "arg B"); // etc.
+
+        // Invoke any static method with a given name and retrieve its result.
+        String myString = invokeAnyMethod(MyClass.class, "myMethodName", "arg A", "arg B"); // etc.
+
+        // Invoke any instance method with a given name and retrieve its result.
+        String myString = invokeAnyMethod(myObject, "myMethodName", "arg A", "arg B"); // etc.
     }
 }
 ```

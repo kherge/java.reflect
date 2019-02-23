@@ -14,6 +14,55 @@ import lombok.SneakyThrows;
 public class Reflect {
 
     /**
+     * Finds any method with the given name in a class.
+     *
+     * <p>This method will check the current class, and each superclass, for any method that
+     * matches the given name. If a method is found, it is made accessible before it is returned.
+     * If a method is not found, an exception is thrown.</p>
+     *
+     * @param clazz The class containing the method.
+     * @param name  The name of the method.
+     *
+     * @return The reflected method.
+     */
+    @SneakyThrows({ NoSuchMethodException.class })
+    public static Method findAnyMethod(Class<?> clazz, String name) {
+        Objects.requireNonNull(clazz, "The class is required.");
+        Objects.requireNonNull(name, "The method name is required.");
+
+        Method[] methods = Arrays
+            .stream(clazz.getDeclaredMethods())
+            .filter(method -> method.getName().equals(name))
+            .toArray(Method[]::new);
+
+        if (methods.length > 0) {
+            return makeAccessible(methods[0]);
+        } else if (clazz.getSuperclass() != null) {
+            return findAnyMethod(clazz.getSuperclass(), name);
+        }
+
+        throw new NoSuchMethodException(String.format("%s.%s()", clazz.getName(), name));
+    }
+
+    /**
+     * Finds any method with the given name in an object.
+     *
+     * <p>This method will check the current class, and each superclass, for any method that
+     * matches the given name. If a method is found, it is made accessible before it is returned.
+     * If a method is not found, an exception is thrown.</p>
+     *
+     * @param object The object whose class contains the method.
+     * @param name   The name of the method.
+     *
+     * @return The reflected method.
+     *
+     * @see #findAnyMethod(Class, String)
+     */
+    public static Method findAnyMethod(Object object, String name) {
+        return findAnyMethod(object.getClass(), name);
+    }
+
+    /**
      * Finds a field with the given name in a class.
      *
      * <p>This method will check the current class, and each superclass, for a field that matches
@@ -139,6 +188,56 @@ public class Reflect {
     @SuppressWarnings("unchecked")
     public static <T> T getFieldValue(Object object, String name) {
         return (T) findField(object, name).get(object);
+    }
+
+    /**
+     * Invokes any static method and returns its result.
+     *
+     * <p>Any method with the same name will be found, invoked, and its results are returned. If a
+     * method could not be found or invoked, an exception is thrown. If the method throws its own
+     * exception, the reflection exception wrapper, <code>InvocationTargetException</code>, is
+     * unwrapped and the inner exception is thrown.</p>
+     *
+     * @param <T>       The type of the method result.
+     * @param clazz     The class containing the method.
+     * @param name      The name of the method.
+     * @param arguments The arguments for the method.
+     *
+     * @return The result of the method.
+     */
+    @SneakyThrows
+    @SuppressWarnings("unchecked")
+    public static <T> T invokeAnyMethod(Class<?> clazz, String name, Object... arguments) {
+        try {
+            return (T) findAnyMethod(clazz, name).invoke(null, arguments);
+        } catch (InvocationTargetException cause) {
+            throw cause.getCause();
+        }
+    }
+
+    /**
+     * Invokes any instance method and returns its result.
+     *
+     * <p>Any method with the same name will be found, invoked, and its results are returned. If a
+     * method could not be found or invoked, an exception is thrown. If the method throws its own
+     * exception, the reflection exception wrapper, <code>InvocationTargetException</code>, is
+     * unwrapped and the inner exception is thrown.</p>
+     *
+     * @param <T>       The type of the method result.
+     * @param object    The object to use if an instance method is invoked.
+     * @param name      The name of the method.
+     * @param arguments The arguments for the method.
+     *
+     * @return The result of the method.
+     */
+    @SneakyThrows
+    @SuppressWarnings("unchecked")
+    public static <T> T invokeAnyMethod(Object object, String name, Object... arguments) {
+        try {
+            return (T) findAnyMethod(object, name).invoke(object, arguments);
+        } catch (InvocationTargetException cause) {
+            throw cause.getCause();
+        }
     }
 
     /**
