@@ -244,7 +244,6 @@ public class Reflect {
      * @throws IllegalArgumentException If the field could not accept the given value.
      */
     @SneakyThrows({ IllegalAccessException.class })
-    @SuppressWarnings("unchecked")
     public static <T> void setFieldValue(Class<?> clazz, String name, T value) {
         findField(clazz, name).set(null, value);
     }
