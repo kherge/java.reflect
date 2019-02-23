@@ -47,10 +47,6 @@ public class Reflect {
     /**
      * Finds any method with the given name in an object.
      *
-     * <p>This method will check the current class, and each superclass, for any method that
-     * matches the given name. If a method is found, it is made accessible before it is returned.
-     * If a method is not found, an exception is thrown.</p>
-     *
      * @param object The object whose class contains the method.
      * @param name   The name of the method.
      *
@@ -92,10 +88,6 @@ public class Reflect {
 
     /**
      * Finds a field with the given name in an object.
-     *
-     * <p>This method will check the current class of an object, and each superclass, for a field
-     * that matches the given name. If the field is found, it is made accessible before it is
-     * returned. If the field is not found, an exception is thrown.</p>
      *
      * @param object The object whose class contains the field.
      * @param name   The name of the field.
@@ -142,10 +134,6 @@ public class Reflect {
     /**
      * Finds a method with the given signature in an object.
      *
-     * <p>This method will check the current class of an object, and each superclass, for a method
-     * that matches the given signature. If the method is found, it is made accessible before it is
-     * returned. If the method is not found, an exception is thrown.</p>
-     *
      * @param object         The object whose class contains the method.
      * @param name           The name of the method.
      * @param parameterTypes The parameter types of the method.
@@ -168,6 +156,8 @@ public class Reflect {
      * @param name   The name of the field.
      *
      * @return The value of the field.
+     *
+     * @see #findField(Class, String)
      */
     @SneakyThrows({ IllegalAccessException.class })
     @SuppressWarnings("unchecked")
@@ -183,6 +173,8 @@ public class Reflect {
      * @param name   The name of the field.
      *
      * @return The value of the field.
+     *
+     * @see #findField(Object, String)
      */
     @SneakyThrows({ IllegalAccessException.class })
     @SuppressWarnings("unchecked")
@@ -193,17 +185,14 @@ public class Reflect {
     /**
      * Invokes any static method and returns its result.
      *
-     * <p>Any method with the same name will be found, invoked, and its results are returned. If a
-     * method could not be found or invoked, an exception is thrown. If the method throws its own
-     * exception, the reflection exception wrapper, <code>InvocationTargetException</code>, is
-     * unwrapped and the inner exception is thrown.</p>
-     *
      * @param <T>       The type of the method result.
      * @param clazz     The class containing the method.
      * @param name      The name of the method.
      * @param arguments The arguments for the method.
      *
      * @return The result of the method.
+     *
+     * @see #findAnyMethod(Class, String)
      */
     @SneakyThrows
     @SuppressWarnings("unchecked")
@@ -218,17 +207,14 @@ public class Reflect {
     /**
      * Invokes any instance method and returns its result.
      *
-     * <p>Any method with the same name will be found, invoked, and its results are returned. If a
-     * method could not be found or invoked, an exception is thrown. If the method throws its own
-     * exception, the reflection exception wrapper, <code>InvocationTargetException</code>, is
-     * unwrapped and the inner exception is thrown.</p>
-     *
      * @param <T>       The type of the method result.
      * @param object    The object to use if an instance method is invoked.
      * @param name      The name of the method.
      * @param arguments The arguments for the method.
      *
      * @return The result of the method.
+     *
+     * @see #findAnyMethod(Object, String)
      */
     @SneakyThrows
     @SuppressWarnings("unchecked")
@@ -243,12 +229,6 @@ public class Reflect {
     /**
      * Invokes a method and returns its result.
      *
-     * <p>A method with the same name and parameters types for the given arguments will be found,
-     * invoked, and its results are returned. If a matching method could not be found or invoked,
-     * an exception is thrown. If the method throws its own exception, the reflection exception
-     * wrapper, <code>InvocationTargetException</code>, is unwrapped and the inner exception is
-     * thrown.</p>
-     *
      * @param <T>       The type of the method result.
      * @param clazz     The class containing the method.
      * @param object    The object to use if an instance method is invoked.
@@ -258,6 +238,8 @@ public class Reflect {
      * @return The result of the method.
      *
      * @throws IllegalArgumentException If the method could not accept an argument.
+     *
+     * @see #findMethod(Class, String, Class[])
      */
     @SneakyThrows
     @SuppressWarnings("unchecked")
@@ -305,12 +287,6 @@ public class Reflect {
     /**
      * Invokes an instance method and returns its result.
      *
-     * <p>A method with the same name and parameters types for the given arguments will be found,
-     * invoked, and its results are returned. If a matching method could not be found or invoked,
-     * an exception is thrown. If the method throws its own exception, the reflection exception
-     * wrapper, <code>InvocationTargetException</code>, is unwrapped and the inner exception is
-     * thrown.</p>
-     *
      * @param <T>       The type of the method result.
      * @param object    The object whose class contains the method.
      * @param name      The name of the method.
@@ -319,6 +295,8 @@ public class Reflect {
      * @return The result of the method.
      *
      * @throws IllegalArgumentException If the method could not accept an argument.
+     *
+     * @see #invokeMethod(Class, String, Object...)
      */
     public static <T> T invokeMethod(Object object, String name, Object... arguments) {
         return invokeMethod(object.getClass(), object, name, arguments);
@@ -347,6 +325,8 @@ public class Reflect {
      * @param value  The new value for the field.
      *
      * @throws IllegalArgumentException If the field could not accept the given value.
+     *
+     * @see #findField(Class, String)
      */
     @SneakyThrows({ IllegalAccessException.class })
     public static <T> void setFieldValue(Class<?> clazz, String name, T value) {
@@ -362,6 +342,8 @@ public class Reflect {
      * @param value  The new value for the field.
      *
      * @throws IllegalArgumentException If the field could not accept the given value.
+     *
+     * @see #findField(Object, String)
      */
     @SneakyThrows({ IllegalAccessException.class })
     public static <T> void setFieldValue(Object object, String name, T value) {
