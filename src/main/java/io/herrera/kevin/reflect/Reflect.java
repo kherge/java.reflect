@@ -226,6 +226,20 @@ public class Reflect {
     }
 
     /**
+     * Makes a reflected object accessible.
+     *
+     * @param <T>    The type of the object.
+     * @param object The accessible object.
+     *
+     * @return The same accessible object.
+     */
+    private static <T extends AccessibleObject> T makeAccessible(T object) {
+        object.setAccessible(true);
+
+        return object;
+    }
+
+    /**
      * Sets the value of a static field.
      *
      * @param <T>    The type of the field.
@@ -257,19 +271,5 @@ public class Reflect {
 
     private Reflect() {
         // Should not be initialized.
-    }
-
-    /**
-     * Makes a reflected object accessible.
-     *
-     * @param <T>    The type of the object.
-     * @param object The accessible object.
-     *
-     * @return The same accessible object.
-     */
-    private static <T extends AccessibleObject> T makeAccessible(T object) {
-        object.setAccessible(true);
-
-        return object;
     }
 }
