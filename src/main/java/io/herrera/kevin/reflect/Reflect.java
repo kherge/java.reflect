@@ -30,19 +30,15 @@ public class Reflect {
         Objects.requireNonNull(clazz, "The class is required.");
         Objects.requireNonNull(name, "The field name is required.");
 
-        NoSuchFieldException exception = null;
-
-        do {
-            try {
-                return makeAccessible(clazz.getDeclaredField(name));
-            } catch (NoSuchFieldException cause) {
-                if (exception == null) {
-                    exception = cause;
-                }
+        try {
+            return makeAccessible(clazz.getDeclaredField(name));
+        } catch (NoSuchFieldException cause) {
+            if (clazz.getSuperclass() != null) {
+                return findField(clazz.getSuperclass(), name);
             }
-        } while ((clazz = clazz.getSuperclass()) != null);
 
-        throw exception;
+            throw cause;
+        }
     }
 
     /**
@@ -83,19 +79,15 @@ public class Reflect {
         Objects.requireNonNull(clazz, "The class is required.");
         Objects.requireNonNull(name, "The method name is required.");
 
-        NoSuchMethodException exception = null;
-
-        do {
-            try {
-                return makeAccessible(clazz.getDeclaredMethod(name, parameterTypes));
-            } catch (NoSuchMethodException cause) {
-                if (exception == null) {
-                    exception = cause;
-                }
+        try {
+            return makeAccessible(clazz.getDeclaredMethod(name, parameterTypes));
+        } catch (NoSuchMethodException cause) {
+            if (clazz.getSuperclass() != null) {
+                return findMethod(clazz.getSuperclass(), name, parameterTypes);
             }
-        } while ((clazz = clazz.getSuperclass()) != null);
 
-        throw exception;
+            throw cause;
+        }
     }
 
     /**
