@@ -14,11 +14,64 @@ import lombok.SneakyThrows;
 public class Reflect {
 
     /**
+     * The reflected class.
+     */
+    private Class<?> clazz;
+
+    /**
+     * The reflected instance.
+     */
+    private Object object;
+
+    /**
+     * Reflect a class.
+     */
+    private Reflect(Class<?> clazz) {
+        this.clazz = clazz;
+    }
+
+    /**
+     * Reflect an instance.
+     */
+    private Reflect(Object object) {
+        this(object.getClass());
+
+        this.object = object;
+    }
+
+    /**
+     * Finds any method with the given name.
+     *
+     * @param name The name of the method.
+     *
+     * @return The reflected method.
+     *
+     * @see #findAnyMethod(Class, String)
+     */
+    public Method anyMethod(String name) {
+        return findAnyMethod(clazz, name);
+    }
+
+    /**
+     * Finds a field with the given name.
+     *
+     * @param name The name of the field.
+     *
+     * @return The reflected field.
+     *
+     * @see #findField(Class, String)
+     */
+    public Field field(String name) {
+        return findField(clazz, name);
+    }
+
+    /**
      * Finds any method with the given name in a class.
      *
-     * <p>This method will check the current class, and each superclass, for any method that
-     * matches the given name. If a method is found, it is made accessible before it is returned.
-     * If a method is not found, an exception is thrown.</p>
+     * <p>This method will traverse the class hierarchy to find a method that matches the given
+     * name. If the method is overloaded, only the first method is used and the rest are ignored.
+     * When a method is found, it is made accessible and then returned. If a method is not found,
+     * an exception is thrown.</p>
      *
      * @param clazz The class containing the method.
      * @param name  The name of the method.
@@ -55,15 +108,17 @@ public class Reflect {
      * @see #findAnyMethod(Class, String)
      */
     public static Method findAnyMethod(Object object, String name) {
+        Objects.requireNonNull(object, "The object is required.");
+
         return findAnyMethod(object.getClass(), name);
     }
 
     /**
      * Finds a field with the given name in a class.
      *
-     * <p>This method will check the current class, and each superclass, for a field that matches
-     * the given name. If the field is found, it is made accessible before it is returned. If the
-     * field is not found, an exception is thrown.</p>
+     * <p>This method will traverse the class hierarchy to find a field that matches the given
+     * name. When a field is found, it is made accessible and then returned. If a field is not
+     * found, an exception is thrown.</p>
      *
      * @param clazz The class containing the field.
      * @param name  The name of the field.
@@ -105,9 +160,9 @@ public class Reflect {
     /**
      * Finds a method with the given signature in a class.
      *
-     * <p>This method will check the current class, and each superclass, for a method that matches
-     * the given signature. If the method is found, it is made accessible before it is returned. If
-     * the method is not found, an exception is thrown.</p>
+     * <p>This method will traverse the class hierarchy to find a method that matches the given
+     * signature. When a method is found, it is made accessible and then returned. If a method is
+     * not found, an exception is thrown.</p>
      *
      * @param clazz          The class containing the method.
      * @param name           The name of the method.
@@ -149,6 +204,22 @@ public class Reflect {
     }
 
     /**
+     * Returns the value of a field.
+     *
+     * @param <T>  The type of the field.
+     * @param name The name of the field.
+     *
+     * @return The value of the field.
+     *
+     * @see #findField(Class, String)
+     */
+    @SneakyThrows({ IllegalAccessException.class })
+    @SuppressWarnings("unchecked")
+    public <T> T get(String name) {
+        return (T) findField(clazz, name).get(object);
+    }
+
+    /**
      * Returns the value of a static field.
      *
      * @param <T>    The type of the field.
@@ -183,6 +254,67 @@ public class Reflect {
     }
 
     /**
+     * Invokes a method and returns its result.
+     *
+     * <p>This method will traverse the class hierarchy to find a method that matches the given
+     * signature. When a method is found, it is made accessible, invoked using the given arguments,
+     * and the result is returned. If <code>InvocationTargetException</code> is thrown, the inner
+     * exception is thrown instead. If a method is not found, an exception is thrown.</p>
+     *
+     * @param <T>       The type of the method result.
+     * @param name      The name of the method.
+     * @param arguments The arguments for the method.
+     *
+     * @return The result of the method.
+     */
+    public <T> T invoke(String name, Object... arguments) {
+        return invokeMethod(clazz, object, name, arguments);
+    }
+
+    /**
+     * Invokes any method and returns its result.
+     *
+     * @param <T>       The type of the method result.
+     * @param name      The name of the method.
+     * @param arguments The arguments for the method.
+     *
+     * @return The result of the method.
+     *
+     * @see #findAnyMethod(Class, String)
+     */
+    public <T> T invokeAny(String name, Object... arguments) {
+        return invokeAnyMethod(clazz, object, name, arguments);
+    }
+
+    /**
+     * Invokes any method and returns its result.
+     *
+     * @param <T>       The type of the method result.
+     * @param clazz     The class containing the method.
+     * @param object    The object to use if an instance method is invoked.
+     * @param name      The name of the method.
+     * @param arguments The arguments for the method.
+     *
+     * @return The result of the method.
+     *
+     * @see #findAnyMethod(Class, String)
+     */
+    @SneakyThrows
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeAnyMethod(
+        Class<?> clazz,
+        Object object,
+        String name,
+        Object... arguments
+    ) {
+        try {
+            return (T) findAnyMethod(clazz, name).invoke(object, arguments);
+        } catch (InvocationTargetException cause) {
+            throw cause.getCause();
+        }
+    }
+
+    /**
      * Invokes any static method and returns its result.
      *
      * @param <T>       The type of the method result.
@@ -194,21 +326,15 @@ public class Reflect {
      *
      * @see #findAnyMethod(Class, String)
      */
-    @SneakyThrows
-    @SuppressWarnings("unchecked")
     public static <T> T invokeAnyMethod(Class<?> clazz, String name, Object... arguments) {
-        try {
-            return (T) findAnyMethod(clazz, name).invoke(null, arguments);
-        } catch (InvocationTargetException cause) {
-            throw cause.getCause();
-        }
+        return invokeAnyMethod(clazz, null, name, arguments);
     }
 
     /**
      * Invokes any instance method and returns its result.
      *
      * @param <T>       The type of the method result.
-     * @param object    The object to use if an instance method is invoked.
+     * @param object    The object whose class contains the method.
      * @param name      The name of the method.
      * @param arguments The arguments for the method.
      *
@@ -216,14 +342,8 @@ public class Reflect {
      *
      * @see #findAnyMethod(Object, String)
      */
-    @SneakyThrows
-    @SuppressWarnings("unchecked")
     public static <T> T invokeAnyMethod(Object object, String name, Object... arguments) {
-        try {
-            return (T) findAnyMethod(object, name).invoke(object, arguments);
-        } catch (InvocationTargetException cause) {
-            throw cause.getCause();
-        }
+        return invokeMethod(object.getClass(), object, name, arguments);
     }
 
     /**
@@ -236,8 +356,6 @@ public class Reflect {
      * @param arguments The arguments for the method.
      *
      * @return The result of the method.
-     *
-     * @throws IllegalArgumentException If the method could not accept an argument.
      *
      * @see #findMethod(Class, String, Class[])
      */
@@ -277,8 +395,8 @@ public class Reflect {
      * @param arguments The arguments for the method.
      *
      * @return The result of the method.
-     *
-     * @throws IllegalArgumentException If the method could not accept an argument.
+     * 
+     * @see #findMethod(Class, String, Class[])
      */
     public static <T> T invokeMethod(Class<?> clazz, String name, Object... arguments) {
         return invokeMethod(clazz, null, name, arguments);
@@ -317,14 +435,62 @@ public class Reflect {
     }
 
     /**
+     * Finds a method with the given signature.
+     *
+     * @param name           The name of the method.
+     * @param parameterTypes The parameter types of the method.
+     *
+     * @return The reflected method.
+     *
+     * @see #findMethod(Class, String, Class[])
+     */
+    public Method method(String name, Class<?>... parameterTypes) {
+        return findMethod(clazz, name, parameterTypes);
+    }
+
+    /**
+     * Creates a new wrapper for the class.
+     *
+     * @param clazz The class to wrap.
+     *
+     * @return The wrapper.
+     */
+    public static Reflect on(Class<?> clazz) {
+        return new Reflect(clazz);
+    }
+
+    /**
+     * Creates a new wrapper for the object.
+     *
+     * @param object The object to wrap.
+     *
+     * @return The wrapper.
+     */
+    public static Reflect on(Object object) {
+        return new Reflect(object);
+    }
+
+    /**
+     * Sets the value of a field.
+     *
+     * @param <T>   The type of the field.
+     * @param name  The name of the field.
+     * @param value The new value for the field.
+     *
+     * @see #findField(Class, String)
+     */
+    @SneakyThrows({ IllegalAccessException.class })
+    public <T> void set(String name, T value) {
+        findField(clazz, name).set(object, value);
+    }
+
+    /**
      * Sets the value of a static field.
      *
      * @param <T>    The type of the field.
      * @param clazz  The class containing the field.
      * @param name   The name of the field.
      * @param value  The new value for the field.
-     *
-     * @throws IllegalArgumentException If the field could not accept the given value.
      *
      * @see #findField(Class, String)
      */
@@ -341,16 +507,10 @@ public class Reflect {
      * @param name   The name of the field.
      * @param value  The new value for the field.
      *
-     * @throws IllegalArgumentException If the field could not accept the given value.
-     *
      * @see #findField(Object, String)
      */
     @SneakyThrows({ IllegalAccessException.class })
     public static <T> void setFieldValue(Object object, String name, T value) {
         findField(object, name).set(object, value);
-    }
-
-    private Reflect() {
-        // Should not be initialized.
     }
 }

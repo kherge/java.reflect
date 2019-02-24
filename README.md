@@ -12,10 +12,11 @@ set of utilities to help simplify field and method reflections.
 
 ```java
 MyClass object = new MyClass("hello");
+Reflect fluent = Reflect.on(object);
 
-String greeting = getFieldValue(object, "myInternalGreeting");
+String greeting = fluent.get("myInternalGreeting");
 
-invokeMethod(object, "sayGreeting", greeting);
+fluent.invoke("sayGreeting", greeting);
 ```
 
 Requirements
@@ -45,11 +46,66 @@ compile 'io.herrera.kevin:reflect:?'
 Usage
 -----
 
-> It is important to note that `findField` and `findMethod` will find any declared member, not just
-> public ones. It is also important to note that `invokeMethod` may not work with methods that make
-> use of generics and variadics. It is recommended that you use `invokeAnyMethod` instead of
-> `invokeMethod` when a method accepts generics or variadics. If the method is overloaded, you may
-> want to use `findMethod` instead.
+There are two ways to use Reflect.
+
+### Fluent
+
+```java
+import io.herrera.io.reflect.Reflect;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+class FluentExample {
+    public static void main() {
+
+        // You can create a fluent interface using classes.
+        Reflect fluent = Reflect.on(MyClass.class);
+
+        // Or, you can create a fluent interface using instances.
+        Reflect fluent = Reflect.on(myInstance);
+
+        /* If you wrap a class, you can only access static members. If you wrap an instance, you
+         * can access both instance and static members. Which is used depends on whether access
+         * to instance members are needed or not.
+         */
+
+        // Find a method for a given name and get its accessible reflection. If it is overloaded,
+        // only get the first one and ignore the rest.
+        Method method = fluent.anyMethod("myMethod");
+
+        // Find a field and get its accessible reflection.
+        Field field = fluent.field("myField");
+
+        // Get the value of a field.
+        //
+        // The library will automatically case the value to match. Note, however, that if the wrong
+        // type is used, ClassCastException exception will be thrown. The type of the value should
+        // be known at all times.
+        Object myValue = fluent.get("myField");
+        String myValue = fluent.get("myField");
+        MyClass myValue = fluent.get("myField"); // etc.
+
+        // Invoke a method with a signature that matches the arguments.
+        //
+        // Like the .get() method, the result will be automatically cast to the desired type. Also
+        // note that if InvocationTargetException is thrown during invocation, the inner exception
+        // is thrown instead.
+        String myResult = fluent.invoke("myMethod", "arg A", "arg B", "arg C"); // etc.
+
+        // Like a combination of anyMethod() and invoke(), find a method for a given name and
+        // invoke it. If its overloaded, use the first one and ignore the rest.
+        String myResult = fluent.invokeAny("myMethod", "arg A", "arg B", "arg C"); // etc.
+
+        // Find a method with a matching signature.
+        Method method = fluent.method("myMethod", ParameterType.class); // etc.
+
+        // Set the value of a field.
+        fluent.set("myField", "my value");
+    }
+}
+```
+
+### Static Methods
 
 ```java
 import static io.herrera.io.reflect.Reflect.*;
@@ -57,19 +113,25 @@ import static io.herrera.io.reflect.Reflect.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-class Example {
+class StaticMethodExample {
     public static void main() {
 
-        // Retrieve a reflected field by class.
+        // Find a field in a class and get its accessible reflection.
         Field field = findField(MyClass.class, "myFieldName");
 
-        // Retrieve a reflected field by object.
+        // Find a field in an instance and get its accessible reflection.
         Field field = findField(myObject, "myFieldName");
 
-        // Retrieve the value of a static field.
+        // Get the value of a static field.
+        //
+        // The library will automatically case the value to match. Note, however, that if the wrong
+        // type is used, ClassCastException exception will be thrown. The type of the value should
+        // be known at all times.
         String myString = getFieldValue(MyClass.class, "myFieldName");
 
-        // Retrieve the value of an instance field.
+        // Get the value of an instance field.
+        //
+        // Again, the value is automatically cast to the desired type.
         String myString = getFieldValue(myObject, "myFieldName");
 
         // Set the value of a static field.
@@ -78,34 +140,52 @@ class Example {
         // Set the value of an instance field.
         setFieldValue(myObject, "myInstanceField", "my value");
 
-        // Retrieve a reflected method by class.
-        Method method = findMethod(MyClass.class, "myMethodName");
-        Method method = findMethod(MyClass.class, "myMethodName", TypeA.class, TypeB.class); // etc.
+        // Find a method in a class with a matching signature.
+        Method method = findMethod(MyClass.class, "myMethodName", ParameterType.class); // etc.
 
-        // Retrieve a reflected method by object.
-        Method method = findMethod(myObject, "myMethodName");
-        Method method = findMethod(myObject, "myMethodName", TypeA.class, TypeB.class); // etc.
+        // Find a method in an instance with a matching signature.
+        Method method = findMethod(myObject, "myMethodName", ParameterType.class); // etc.
 
-        // Retrieve any reflected method by class for a given name.
+        // Find a method for a given name in a class and get its accessible reflection. If it is
+        // overloaded, only get the first one and ignore the rest.
         Method method = findAnyMethod(MyClass.class, "myMethodName");
 
-        // Retrieve any reflected method by object for a given name.
+        // Find a method for a given name in an instance and get its accessible reflection. If it
+        // is overloaded, only get the first one and ignore the rest.
         Method method = findAnyMethod(myObject, "myMethodName");
 
-        // Invoke a static method and retrieve its result.
+        // Invoke a static method with a signature that matches the arguments.
+        //
+        // Like the getFieldValue() method, the result will be automatically cast to the desired
+        // type. Also note that if InvocationTargetException is thrown during invocation, the inner
+        // exception is thrown instead. If you try to invoke an instance method using a static
+        // context, NullPointerException exception is thrown.
         String myString = invokeMethod(MyClass.class, "myMethodName", "arg A", "arg B"); // etc.
 
-        // Invoke an instance method and retrieve its result.
+        // Invoke a instance method with a signature that matches the arguments.
+        //
+        // Same caveats as invoke a static method.
         String myString = invokeMethod(myObject, "myMethodName", "arg A", "arg B"); // etc.
 
-        // Invoke any static method with a given name and retrieve its result.
+        // Like a combination of findAnyMethod() and invokeMethod(), find a static method for a
+        // given name and invoke it. If its overloaded, use the first one and ignore the rest.
         String myString = invokeAnyMethod(MyClass.class, "myMethodName", "arg A", "arg B"); // etc.
 
-        // Invoke any instance method with a given name and retrieve its result.
+        // Like a combination of findAnyMethod() and invokeMethod(), find a instance method for a
+        // given name and invoke it. If its overloaded, use the first one and ignore the rest.
         String myString = invokeAnyMethod(myObject, "myMethodName", "arg A", "arg B"); // etc.
     }
 }
 ```
+
+Notes
+-----
+
+- Generics and variadics can make using reflections very hard. If a method uses generic types or
+  variadic parameter list, it is recommended that the method is found using its exact signature
+  (e.g. `.method()`, `findMethod()`) instead of relying on the library to infer the signature (e.g.
+  `.invoke()`, `invokeMethod()`). If the method is not overloaded, the methods `.invokeAny()` or
+  `invokeAnyMethod()` could be used.
 
 License
 -------
